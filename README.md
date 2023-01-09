@@ -4,7 +4,7 @@ This is a test package for UFOManager.
 
 You need to install the requirements for corresponding python version.
 
-You need to install the [UFOManger Package]()
+You need to install the [UFOManger Package](https://github.com/ThanosWang/TestPackage/blob/main/UFOManager/UFOManager-1.0.tar.gz)
 
 You can use
 '''bash

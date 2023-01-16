@@ -12,6 +12,7 @@ import argparse
 from termcolor import colored, cprint
 import re
 import datetime
+from particle import PDGID
 
 if sys.version_info.major == 3:
     raw_input = input
@@ -249,7 +250,7 @@ def validator(model_path):
 
     del sys.modules['parameters']
     
-    # Check particles.py and if contains particles
+    # Check particles.py and all particles
     try:
         import particles
     except ImportError:
@@ -258,31 +259,79 @@ def validator(model_path):
         raise Exception(colored('The file "particles.py" could not be imported. Please check again', 'red'))
 
     particle_dict = {}
-    new_particle_dict = {}
+    SM_elementary_particle_dict = {}
+    BSM_elementary_particle_with_registered_PDGID_dict = {}
+    Particle_with_PDG_like_ID_dict = {}
+    Wrong_charge_dict = {}
+    Wrong_spin_dict = {}
     pdg_code_list = []
-    number_of_particles = 0
     spin = [1, 2, 3, 5]
-    elementary_particles = [1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 11, 12, 13, 14, 15, 16, -11, -12, -13, -14, -15, -16, 9, 21, 22, 23, 24, -24, 25, 35, 36, 37, -37]
+    elementary_particles = [1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 11, 12, 13, 14, 15, 16, -11, -12, -13, -14, -15, -16, 9, 21, 22, 23, 24, -24, 25, 32, 33, 34, -34, 35, 36, 37, -37, 38, -38, 40]
     for i in [item for item in dir(particles) if not item.startswith("__")]:
         item = getattr(particles,i)
         if type(item) == (object_library.Particle):
-            number_of_particles += 1
-            particle_dict[item.name] = item.pdg_code
-            pdg_code_list.append(item.pdg_code)
-            if item.spin in spin and item.pdg_code not in elementary_particles:
-                new_particle_dict[item.name] = item.pdg_code
+            if item.GhostNumber == 0:
+                particle_dict[item.name] = item.pdg_code
+                pdg_code_list.append(item.pdg_code)
+
+                if PDGID(item.pdg_code).is_valid == True:
+                    if PDGID(item.pdg_code).three_charge != item.charge*3:
+                        Wrong_charge_dict[item.name] = PDGID(item.pdg_code).three_charge
+                    if PDGID(item.pdg_code).j_spin != item.spin:
+                        if item.spin == 1 and PDGID(item.pdg_code).j_spin == None:
+                            pass
+                        else:
+                            Wrong_spin_dict[item.name] = PDGID(item.pdg_code).j_spin
+
+                    if PDGID(item.pdg_code).is_quark or PDGID(item.pdg_code).is_lepton or PDGID(item.pdg_code).is_gauge_boson_or_higgs:
+                        if PDGID(item.pdg_code).is_sm_quark or PDGID(item.pdg_code).is_sm_lepton or PDGID(item.pdg_code).is_sm_gauge_boson_or_higgs:
+                            SM_elementary_particle_dict[item.name] = item.pdg_code
+                        else:
+                            BSM_elementary_particle_with_registered_PDGID_dict[item.name] = item.pdg_code
+                else:
+                    Particle_with_PDG_like_ID_dict[item.name] = item.pdg_code                    
 
     if len(particle_dict) == 0:
-        raise Exception(colored('There should be particles defined in "particles.py"', 'red'))
+        os.chdir(model_path)
+        shutil.rmtree('ModelFolder')
+        raise Exception(colored('There should be real particles defined in "particles.py"', 'red'))
 
     if len(set(pdg_code_list)) != len(pdg_code_list):
+        os.chdir(model_path)
+        shutil.rmtree('ModelFolder')
         raise Exception(colored('Some of your particles have same pdg code, please check again!', 'red'))
     
+    if len(Wrong_charge_dict) or len(Wrong_spin_dict) != 0:
+        if len(Wrong_charge_dict) != 0:
+            print(colored('Some of your particles have different three_charge value from that registered in Particle Data Group particle data. The correct three_charge values are shown below.','red'))
+            for key in Wrong_charge_dict.keys():
+                print(key,Wrong_charge_dict[key])
+
+        if len(Wrong_spin_dict) != 0:
+            print(colored('Some of your particles have different spin value from that registered in Particle Data Group particle data. The correct spin values are shown above.','red'))
+            for key in Wrong_spin_dict.keys():
+                print(key,Wrong_spin_dict[key])
+        
+        if raw_input('Do you still want to continue your validation check? Please type in {} or {}: '.format(colored('Yes', 'green'), colored('No','red'))) == 'No':
+            os.chdir(model_path)
+            shutil.rmtree('ModelFolder')
+            sys.exit()
+
     print('Check if model contains well behaved "particles.py": ' + colored("PASSED!", 'green'))
-    print('The model contains %i fundamental particles' %(number_of_particles))
-    print('The model contains %i new elementary particles and corresponding pdg codes are:'%(len(list(new_particle_dict.keys()))))
-    for key in new_particle_dict.keys():
-        print(key, new_particle_dict[key])
+
+    print('The model contains %i fundamental particles' %(len(SM_elementary_particle_dict)))
+
+    print('The model contains %i Standard Model elementary particles with registered pdg codes:'%(len(list(SM_elementary_particle_dict.keys()))))
+    for key in SM_elementary_particle_dict.keys():
+        print(key, SM_elementary_particle_dict[key])
+    
+    print('The model contains %i Beyond the Standard Model elementary particles with registered pdg codes:'%(len(list(BSM_elementary_particle_with_registered_PDGID_dict.keys()))))
+    for key in BSM_elementary_particle_with_registered_PDGID_dict.keys():
+        print(key, BSM_elementary_particle_with_registered_PDGID_dict[key])
+
+    print('The model contains %i particles with pdg-like codes:'%(len(list(Particle_with_PDG_like_ID_dict.keys()))))
+    for key in Particle_with_PDG_like_ID_dict.keys():
+        print(key, Particle_with_PDG_like_ID_dict[key])
 
     del sys.modules['particles']
 
@@ -303,6 +352,8 @@ def validator(model_path):
             number_of_vertices += 1
 
     if len(vertex) == 0:
+        os.chdir(model_path)
+        shutil.rmtree('ModelFolder')
         raise Exception(colored('There should be vertices defined in "vertices.py"', 'red'))
     else:
         print('Check if model contains well behaved "vertices.py": ' + colored("PASSED!", 'green'))
@@ -327,6 +378,8 @@ def validator(model_path):
             number_of_coupling_orders += 1
 
     if len(coupling_order) == 0:
+        os.chdir(model_path)
+        shutil.rmtree('ModelFolder')
         raise Exception(colored('There should be coupling orders defined in "coupling_orders.py"','red'))
     else:
         print('Check if model contains well behaved "coupling_orders.py": ' + colored("PASSED!", 'green'))
@@ -352,6 +405,8 @@ def validator(model_path):
             number_of_coupling_tensors += 1
 
     if len(coupling_tensor) == 0:
+        os.chdir(model_path)
+        shutil.rmtree('ModelFolder')
         raise Exception('There should be coupling tensors defined in "couplings.py"')
     else:
         print('Check if model contains well behaved "couplings.py": ' + colored("PASSED!", 'green'))
@@ -377,6 +432,8 @@ def validator(model_path):
             number_of_lorentz_tensors += 1
 
     if len(lorentz_tensor) == 0:
+        os.chdir(model_path)
+        shutil.rmtree('ModelFolder')
         raise Exception(colored('There should be lorentz tensors defined in "lorentz.py"', 'red'))
     else:
         print('Check if model contains well behaved "lorentz.py": ' + colored("PASSED!", 'green'))
@@ -397,6 +454,8 @@ def validator(model_path):
                 number_of_propagators += 1
 
         if len(props) == 0:
+            os.chdir(model_path)
+            shutil.rmtree('ModelFolder')
             raise Exception('There should be propagators defined in "propagators.py"')
         else:
             print('Check if model contains well behaved "propagators.py": ' + colored("PASSED!", 'green'))
@@ -418,6 +477,8 @@ def validator(model_path):
                 number_of_decays += 1
 
         if len(decay) == 0:
+            os.chdir(model_path)
+            shutil.rmtree('ModelFolder')
             raise Exception('There should be decays defined in "decays.py"')
         else:
             print('Check if model contains well behaved "decays.py": ' + colored("PASSED!", 'green'))
@@ -438,7 +499,7 @@ def validator(model_path):
         if f in sys.modules.keys():
             del sys.modules[f]        
 
-    return file, original_file, number_of_params, particle_dict, new_particle_dict, number_of_vertices, number_of_coupling_orders, number_of_coupling_tensors, number_of_lorentz_tensors, number_of_propagators, number_of_decays
+    return file, original_file, number_of_params, particle_dict, SM_elementary_particle_dict, Particle_with_PDG_like_ID_dict, BSM_elementary_particle_with_registered_PDGID_dict, number_of_vertices, number_of_coupling_orders, number_of_coupling_tensors, number_of_lorentz_tensors, number_of_propagators, number_of_decays
 
 
 def validator_all(all_models):
@@ -451,7 +512,7 @@ def validator_all(all_models):
 
 def metadatamaker(model_path, create_file = True):
     # Check Validation and get necessary outputs
-    file, original_file, number_of_params, particle_dict, new_particle_dict, number_of_vertices, number_of_coupling_orders, number_of_coupling_tensors, number_of_lorentz_tensors, number_of_propagators, number_of_decays = validator(model_path)
+    file, original_file, number_of_params, particle_dict, SM_elementary_particle_dict, Particle_with_PDG_like_ID_dict, BSM_elementary_particle_with_registered_PDGID_dict, number_of_vertices, number_of_coupling_orders, number_of_coupling_tensors, number_of_lorentz_tensors, number_of_propagators, number_of_decays = validator(model_path)
     filename = [i for i in original_file if i != 'metadata.json'][0]
     print('\nWorking on model: ' + colored(model_path, "magenta") + "\n")
     modelname = raw_input('Please name your model:')
@@ -474,7 +535,9 @@ def metadatamaker(model_path, create_file = True):
                 'Model Version' : modelversion,
                 'Model Python Version' : sys.version_info.major,
                 'All Particles' : particle_dict,
-                'New elementary particles' : new_particle_dict,
+                'Standard Model elementary particles' : SM_elementary_particle_dict,
+                'Beyond the Standard Model elementary particles with Standard PDGIDs': BSM_elementary_particle_with_registered_PDGID_dict,
+                'Particles with PDG-like IDs': Particle_with_PDG_like_ID_dict,
                 'Number of parameters' : number_of_params,
                 'Number of vertices' : number_of_vertices,
                 'Number of coupling orders' : number_of_coupling_orders,

@@ -262,11 +262,7 @@ def validator(model_path):
     SM_elementary_particle_dict = {}
     BSM_elementary_particle_with_registered_PDGID_dict = {}
     Particle_with_PDG_like_ID_dict = {}
-    Wrong_charge_dict = {}
-    Wrong_spin_dict = {}
     pdg_code_list = []
-    spin = [1, 2, 3, 5]
-    elementary_particles = [1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 11, 12, 13, 14, 15, 16, -11, -12, -13, -14, -15, -16, 9, 21, 22, 23, 24, -24, 25, 32, 33, 34, -34, 35, 36, 37, -37, 38, -38, 40]
     for i in [item for item in dir(particles) if not item.startswith("__")]:
         item = getattr(particles,i)
         if type(item) == (object_library.Particle):
@@ -276,12 +272,16 @@ def validator(model_path):
 
                 if PDGID(item.pdg_code).is_valid == True:
                     if PDGID(item.pdg_code).three_charge != item.charge*3:
-                        Wrong_charge_dict[item.name] = PDGID(item.pdg_code).three_charge
+                        Particle_with_PDG_like_ID_dict[item.name] = {'id': item.pdg_code,
+                                                                     'spin': item.spin,
+                                                                     'charge': item.charge}
                     if PDGID(item.pdg_code).j_spin != item.spin:
                         if item.spin == 1 and PDGID(item.pdg_code).j_spin == None:
                             pass
                         else:
-                            Wrong_spin_dict[item.name] = PDGID(item.pdg_code).j_spin
+                            Particle_with_PDG_like_ID_dict[item.name] = {'id': item.pdg_code,
+                                                                         'spin': item.spin,
+                                                                         'charge': item.charge}
 
                     if PDGID(item.pdg_code).is_quark or PDGID(item.pdg_code).is_lepton or PDGID(item.pdg_code).is_gauge_boson_or_higgs:
                         if PDGID(item.pdg_code).is_sm_quark or PDGID(item.pdg_code).is_sm_lepton or PDGID(item.pdg_code).is_sm_gauge_boson_or_higgs:
@@ -289,7 +289,9 @@ def validator(model_path):
                         else:
                             BSM_elementary_particle_with_registered_PDGID_dict[item.name] = item.pdg_code
                 else:
-                    Particle_with_PDG_like_ID_dict[item.name] = item.pdg_code                    
+                    Particle_with_PDG_like_ID_dict[item.name] = {'id': item.pdg_code,
+                                                                 'spin': item.spin,
+                                                                 'charge': item.charge}                    
 
     if len(particle_dict) == 0:
         os.chdir(model_path)
@@ -300,22 +302,6 @@ def validator(model_path):
         os.chdir(model_path)
         shutil.rmtree('ModelFolder')
         raise Exception(colored('Some of your particles have same pdg code, please check again!', 'red'))
-    
-    if len(Wrong_charge_dict) or len(Wrong_spin_dict) != 0:
-        if len(Wrong_charge_dict) != 0:
-            print(colored('Some of your particles have different three_charge value from that registered in Particle Data Group particle data. The correct three_charge values are shown below.','red'))
-            for key in Wrong_charge_dict.keys():
-                print(key,Wrong_charge_dict[key])
-
-        if len(Wrong_spin_dict) != 0:
-            print(colored('Some of your particles have different spin value from that registered in Particle Data Group particle data. The correct spin values are shown above.','red'))
-            for key in Wrong_spin_dict.keys():
-                print(key,Wrong_spin_dict[key])
-        
-        if raw_input('Do you still want to continue your validation check? Please type in {} or {}: '.format(colored('Yes', 'green'), colored('No','red'))) == 'No':
-            os.chdir(model_path)
-            shutil.rmtree('ModelFolder')
-            sys.exit()
 
     print('Check if model contains well behaved "particles.py": ' + colored("PASSED!", 'green'))
 

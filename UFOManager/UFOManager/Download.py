@@ -9,6 +9,7 @@ from getpass import getpass
 import argparse
 from tabulate import tabulate
 from termcolor import colored
+from particle import PDGID
 # This python script utilizes zenodo_get package from David Völgyes 
 # David Völgyes. (2020, February 20). Zenodo_get: a downloader for Zenodo records (Version 1.3.4).
 # Zenodo. https://doi.org/10.5281/zenodo.1261812
@@ -155,8 +156,11 @@ def Search(Github_Access_Token):
             pdg_code = [f.strip() for f in input('Please enter your needed pdg code: ').split(',')]
             pdg_code_list = [int(i) for i in pdg_code]
             target_list = []
-            elementary_particles = [1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 11, 12, 13, 14, 15, 16, -11, -12, -13, -14, -15, -16, 9, 21, 22, 23, 24, -24, 25, 35, 36, 37, -37]
-            elementary_particle_compare = all(i in elementary_particles for i in pdg_code_list)
+            elementary_particles_list = []
+            for i in pdg_code_list:
+                if PDGID(i).is_sm_quark == True or PDGID(i).is_sm_gauge_boson_or_higgs == True or PDGID(i).is_sm_lepton == True:
+                    elementary_particles_list.append(i)
+            elementary_particle_compare = all(i in elementary_particles_list for i in pdg_code_list)
             Feedback = 'All particles you are looking for are elementary particles which are contained by all models. Please try again with BSM particles.'
             if elementary_particle_compare:
                 print(colored(Feedback,'red'))
@@ -193,8 +197,11 @@ def Search(Github_Access_Token):
                     pdg_code_corresponding_list = [metadatafile['All Particles'][i] for i in particle_name_list]
                     break
             if pdg_code_corresponding_list != []:
-                elementary_particles = [1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 11, 12, 13, 14, 15, 16, -11, -12, -13, -14, -15, -16, 9, 21, 22, 23, 24, -24, 25, 35, 36, 37, -37]
-                elementary_particle_compare = all(i in elementary_particles for i in pdg_code_corresponding_list)
+                elementary_particles_list = []
+                for i in pdg_code_corresponding_list:
+                    if PDGID(i).is_sm_quark == True or PDGID(i).is_sm_gauge_boson_or_higgs == True or PDGID(i).is_sm_lepton == True:
+                        elementary_particles_list.append(i)
+                elementary_particle_compare = all(i in elementary_particles_list for i in pdg_code_corresponding_list)
                 Feedback = 'All particles you are looking for are elementary particles which are contained by all models. Please try again with BSM particles.'
                 if elementary_particle_compare:
                     print(colored(Feedback,'red'))

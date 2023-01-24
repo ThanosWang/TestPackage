@@ -474,6 +474,66 @@ def validator(model_path):
         number_of_decays = 0
         pass
 
+    # Check if the model supports NLO calculations
+    try:
+        import CT_couplings
+        CT_coupling = []
+        for i in [item for item in dir(CT_couplings) if not item.startswith("__")]:
+            item = getattr(CT_couplings,i)
+            if type(item) == (object_library.Coupling):
+                CT_coupling.append(item.name)
+        if len(CT_coupling) == 0:
+            Check_CTCouplings = False
+            print('Check if model contains well behaved "CT_couplings.py": ' + colored("FAILED!", 'red'))
+        else:
+            print('Check if model contains well behaved "CT_couplings.py": ' + colored("PASSED!", 'green'))
+            Check_CTCouplings = True
+        del sys.modules['CT_couplings']
+    except ImportError:
+        print('Check if model contains well behaved "CT_couplings.py": ' + colored("FAILED!", 'red'))
+        Check_CTCouplings = False
+
+    try:
+        import CT_parameters
+        CT_parameter = []
+        for i in [item for item in dir(CT_parameters) if not item.startswith("__")]:
+            item = getattr(CT_parameters,i)
+            if type(item) == (object_library.CTParameter):
+                CT_parameter.append(item.name)
+        if len(CT_parameter) == 0:
+            Check_CTParameters = False
+            print('Check if model contains well behaved "CT_parameters.py": ' + colored("FAILED!", 'red'))
+        else:
+            print('Check if model contains well behaved "CT_parameters.py": ' + colored("PASSED!", 'green'))
+            Check_CTParameters = True
+    except ImportError:
+        print('Check if model contains well behaved "CT_parameters.py": ' + colored("FAILED!", 'red'))
+        Check_CTParameters = False
+
+    try:
+        import CT_vertices
+        CT_vertice = []
+        for i in [item for item in dir(CT_vertices) if not item.startswith("__")]:
+            item = getattr(CT_vertices,i)
+            if type(item) == (object_library.CTVertex):
+                CT_vertice.append(item.name)
+        if len(CT_vertice) == 0:
+            Check_CTVertices = False
+            print('Check if model contains well behaved "CT_vertices.py": ' + colored("FAILED!", 'red'))
+        else:
+            print('Check if model contains well behaved "CT_vertices.py": ' + colored("PASSED!", 'green'))
+            Check_CTVertices = True
+    except ImportError:
+        print('Check if model contains well behaved "CT_vertices.py": ' + colored("FAILED!", 'red'))
+        Check_CTVertices = True
+    
+    if Check_CTCouplings == True and Check_CTParameters == True and Check_CTVertices == True:
+        print(colored('The model supports NLO calculations.','green'))
+        NLO_value = True
+    else:
+        print(colored('The model does not support NLO calculations.','red'))
+        NLO_value = False
+    
     # Finish the validation checking
     os.chdir(model_path)
     shutil.rmtree('ModelFolder')
@@ -485,7 +545,7 @@ def validator(model_path):
         if f in sys.modules.keys():
             del sys.modules[f]        
 
-    return file, original_file, number_of_params, particle_dict, SM_elementary_particle_dict, Particle_with_PDG_like_ID_dict, BSM_elementary_particle_with_registered_PDGID_dict, number_of_vertices, number_of_coupling_orders, number_of_coupling_tensors, number_of_lorentz_tensors, number_of_propagators, number_of_decays
+    return file, original_file, number_of_params, particle_dict, SM_elementary_particle_dict, Particle_with_PDG_like_ID_dict, BSM_elementary_particle_with_registered_PDGID_dict, number_of_vertices, number_of_coupling_orders, number_of_coupling_tensors, number_of_lorentz_tensors, number_of_propagators, number_of_decays, NLO_value
 
 
 def validator_all(all_models):
@@ -498,7 +558,7 @@ def validator_all(all_models):
 
 def metadatamaker(model_path, create_file = True):
     # Check Validation and get necessary outputs
-    file, original_file, number_of_params, particle_dict, SM_elementary_particle_dict, Particle_with_PDG_like_ID_dict, BSM_elementary_particle_with_registered_PDGID_dict, number_of_vertices, number_of_coupling_orders, number_of_coupling_tensors, number_of_lorentz_tensors, number_of_propagators, number_of_decays = validator(model_path)
+    file, original_file, number_of_params, particle_dict, SM_elementary_particle_dict, Particle_with_PDG_like_ID_dict, BSM_elementary_particle_with_registered_PDGID_dict, number_of_vertices, number_of_coupling_orders, number_of_coupling_tensors, number_of_lorentz_tensors, number_of_propagators, number_of_decays, NLO_value = validator(model_path)
     filename = [i for i in original_file if i != 'metadata.json'][0]
     print('\nWorking on model: ' + colored(model_path, "magenta") + "\n")
     modelname = raw_input('Please name your model:')
@@ -520,6 +580,7 @@ def metadatamaker(model_path, create_file = True):
                 'Model Doi' : Doi,
                 'Model Version' : modelversion,
                 'Model Python Version' : sys.version_info.major,
+                'NLO Model': NLO_value,
                 'All Particles' : particle_dict,
                 'Standard Model elementary particles' : SM_elementary_particle_dict,
                 'Beyond the Standard Model elementary particles with Standard PDGIDs': BSM_elementary_particle_with_registered_PDGID_dict,

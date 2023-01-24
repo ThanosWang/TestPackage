@@ -580,10 +580,10 @@ def metadatamaker(model_path, create_file = True):
                 'Model Doi' : Doi,
                 'Model Version' : modelversion,
                 'Model Python Version' : sys.version_info.major,
-                'NLO Model': NLO_value,
+                'Allows NLO calculations': NLO_value,
                 'All Particles' : particle_dict,
-                'Standard Model elementary particles' : SM_elementary_particle_dict,
-                'Beyond the Standard Model elementary particles with Standard PDGIDs': BSM_elementary_particle_with_registered_PDGID_dict,
+                'SM particles' : SM_elementary_particle_dict,
+                'BSM particles with standard PDG codes': BSM_elementary_particle_with_registered_PDGID_dict,
                 'Particles with PDG-like IDs': Particle_with_PDG_like_ID_dict,
                 'Number of parameters' : number_of_params,
                 'Number of vertices' : number_of_vertices,
@@ -1188,7 +1188,7 @@ def githubupload_all(all_models):
     If your pull request failed or workflow doesn't start, please contact ''' +  colored('thanoswang@163.com/zijun4@illinois.edu' ,'blue')
     )
 
-def Upload(command,modelpath):
+def UFOUpload(command,modelpath):
     with open(modelpath) as f:
         all_models = [line.strip() for line in f.readlines() if not line.strip().startswith('#')]
     if command == 'Validation check':

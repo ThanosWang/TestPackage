@@ -280,7 +280,7 @@ def Delete():
     os.chdir(api_path)
     shutil.rmtree('MetadatafilesTemporaryFolder')
 
-def Download(command):
+def UFODownload(command):
     global api_path
     api_path = os.getcwd()
     Github_Access_Token = getpass('Please enter you Github access token:')

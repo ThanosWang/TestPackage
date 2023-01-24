@@ -6,8 +6,6 @@ The aim is to transfer UFOManager repo into a python package suitable for both P
 
 You need to install the [requirements_Python2.txt](https://github.com/ThanosWang/TestPackage/blob/main/requirements_Python2.txt) or [requirements_Python3.txt](https://github.com/ThanosWang/TestPackage/blob/main/requirements_Python3.txt) for corresponding Python version.
 
-You can download [UFOManager](https://github.com/ThanosWang/TestPackage/blob/main/UFOManager-1.0.tar.gz).
-
 After download, use
 ```bash
 $pip install UFOManager-1.0.tar.gz

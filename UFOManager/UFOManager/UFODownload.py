@@ -1,7 +1,10 @@
+import sys
+from termcolor import colored
+if sys.version_info.major == 2:
+    raise Exception(colored('UFODownload.py only works for Python 3','red'))
 from github import Github
 import os
 import requests
-import sys
 import shutil
 import json
 import zenodo_get
@@ -277,9 +280,10 @@ def Delete():
     os.chdir(api_path)
     shutil.rmtree('MetadatafilesTemporaryFolder')
 
-def Download(command,Github_Access_Token):
+def Download(command):
     global api_path
     api_path = os.getcwd()
+    Github_Access_Token = getpass('Please enter you Github access token:')
     AccessGitRepo(Github_Access_Token=Github_Access_Token)
 
     if command == 'Search for model':

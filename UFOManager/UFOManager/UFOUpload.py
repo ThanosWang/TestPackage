@@ -528,10 +528,10 @@ def validator(model_path):
         Check_CTVertices = True
     
     if Check_CTCouplings == True and Check_CTParameters == True and Check_CTVertices == True:
-        print(colored('The model supports NLO calculations.','green'))
+        print(colored('The model allows NLO calculations.','green'))
         NLO_value = True
     else:
-        print(colored('The model does not support NLO calculations.','red'))
+        print(colored('The model does not allow NLO calculations.','red'))
         NLO_value = False
     
     # Finish the validation checking

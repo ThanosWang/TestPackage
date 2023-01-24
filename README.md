@@ -6,26 +6,20 @@ The aim is to transfer UFOManager repo into a python package suitable for both P
 
 You need to install the [requirements_Python2.txt](https://github.com/ThanosWang/TestPackage/blob/main/requirements_Python2.txt) or [requirements_Python3.txt](https://github.com/ThanosWang/TestPackage/blob/main/requirements_Python3.txt) for corresponding Python version.
 
-After download, use
-```bash
-$pip install UFOManager-1.0.tar.gz
-```
-to install this package.
-
 You can use
 ```bash
-from UFOManger import Upload, Download
-Upload(command,modelpath)
+from UFOManger import UFOUpload, UFODownload
+UFOUpload(command,modelpath)
 
-Download(command.Github_Access_Token)
+UFODownload(command)
 ```
 in your python script,
 
 or use
 ```bash
-python -m UFOManager.Upload 'Command'
+python -m UFOManager.UFOUpload 'Command'
 
-Python -m UFOManager.Download 'Command'
+Python -m UFOManager.UFODownload 'Command'
 ```
 in command line.
 
@@ -47,8 +41,8 @@ For Validation check, Upload will do a series checks on particles defined in UFO
 
 For Generate metadata, Upload will generate new information for particles inside the model:
 1. All Particles: All particles defined in the model and corresponding IDs 
-2. Standard Model elementary particles: Standard Model elementary particles defined in the model and corresponding PDGIDs
-3. Beyond the Standard Model elementary particles with Standard PDGIDs: Beyond the Standard Model elementary particles defined in the model and valid corresponding PGDIDs (new particles who have registered PDGIDs)
+2. SM particles: Standard Model elementary particles defined in the model and corresponding PDGIDs
+3. BSM particles with standard PDG codes: Beyond the Standard Model elementary particles defined in the model and valid corresponding PGDIDs (new particles who have registered PDGIDs)
 4. Particles with PDG-like IDs: Particles defined in the model, which are not registered by [Particle Data Group](https://pdg.lbl.gov/)， with their IDs, spin, and charge
 
 And for all information about particles, ghost is not included

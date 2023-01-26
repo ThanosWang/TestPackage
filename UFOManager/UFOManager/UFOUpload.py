@@ -56,8 +56,8 @@ def validator(model_path):
         except:
             raise Exception(colored('At least one author name does not exist in metadata', 'red'))
         if 'contact' in i:
-            assert re.match(regex, i['contact'].strip()), \
-                Exception(colored('At least one author contact is not a valid email address', 'red'))
+            if not re.match(regex, i['contact'].strip()):
+                print(colored('At least one author contact is not a valid email address, please check!', 'yellow'))
             all_contact.append(i['contact'])
     assert all_contact != [], colored('No contact information for authors exists ', 'red')
     print('Check author information and contact information in initial metadata:' + colored(' PASSED!', 'green'))
@@ -271,7 +271,7 @@ def validator(model_path):
                 pdg_code_list.append(item.pdg_code)
 
                 if PDGID(item.pdg_code).is_valid == True:
-                    if PDGID(item.pdg_code).three_charge != item.charge*3:
+                    if PDGID(item.pdg_code).three_charge != int(round(item.charge*3)):
                         Particle_with_PDG_like_ID_dict[item.name] = {'id': item.pdg_code,
                                                                      'spin': item.spin,
                                                                      'charge': item.charge}
@@ -283,10 +283,11 @@ def validator(model_path):
                                                                          'spin': item.spin,
                                                                          'charge': item.charge}
 
-                    if PDGID(item.pdg_code).is_quark or PDGID(item.pdg_code).is_lepton or PDGID(item.pdg_code).is_gauge_boson_or_higgs:
+                    #if PDGID(item.pdg_code).is_quark or PDGID(item.pdg_code).is_lepton or PDGID(item.pdg_code).is_gauge_boson_or_higgs:
+                    if item.spin in [1,2,3]:   
                         if PDGID(item.pdg_code).is_sm_quark or PDGID(item.pdg_code).is_sm_lepton or PDGID(item.pdg_code).is_sm_gauge_boson_or_higgs:
                             SM_elementary_particle_dict[item.name] = item.pdg_code
-                        else:
+                        elif item.name not in Particle_with_PDG_like_ID_dict.keys():
                             BSM_elementary_particle_with_registered_PDGID_dict[item.name] = item.pdg_code
                 else:
                     Particle_with_PDG_like_ID_dict[item.name] = {'id': item.pdg_code,

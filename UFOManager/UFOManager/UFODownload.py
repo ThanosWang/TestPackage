@@ -13,13 +13,13 @@ import argparse
 from tabulate import tabulate
 from termcolor import colored
 from particle import PDGID
-# This python script utilizes zenodo_get package from David Völgyes 
-# David Völgyes. (2020, February 20). Zenodo_get: a downloader for Zenodo records (Version 1.3.4).
+# This python script utilizes zenodo_get package from David Volgyes
+# David Volgyes. (2020, February 20). Zenodo_get: a downloader for Zenodo records (Version 1.3.4).
 # Zenodo. https://doi.org/10.5281/zenodo.1261812
 
 # Bibtex format:
 '''@misc{david_volgyes_2020_10.5281/zenodo.1261812,
-author  = {David Völgyes},
+author  = {David V\"{o}lgyes},
 title   = {Zenodo_get: a downloader for Zenodo records.},
 month   = {2},
 year    = {2020},
@@ -263,7 +263,7 @@ def Downloader(Github_Access_Token, filelist=None):
     except FileExistsError:
         os.chdir(foldername)
 
-    # Download model files from zenodo using zenodo_get created by David Völgyes
+    # Download model files from zenodo using zenodo_get created by David Volgyes
     for i in download_doi:
         single_download_doi = []
         single_download_doi.append(i)

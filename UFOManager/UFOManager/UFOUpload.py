@@ -639,8 +639,12 @@ def uploader(model_path, myrepo, myfork, params):
             url += metadata_name
             metadata = requests.get(url)
             open(metadata_name,'wb').write(metadata.content)
-            with open(metadata_name,encoding='utf-8') as metadata:
-                file = json.load(metadata)
+            if sys.version_info.major == 3:
+                with open(metadata_name,encoding='utf-8') as metadata:
+                    file = json.load(metadata)
+            else:
+                with open(metadata_name) as metadata:
+                    file = json.load(metadata)
             DOI = file['Model Doi']
             print('Your metadata file name has been used. Please check the model with DOI: ' + colored(DOI, 'red') + ' in Zenodo.')
             os.remove(metadata_name)
